@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# key: trans
+# name: insert transaction
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 'nil))
+# type: snippet
+# binding: direct-keybinding        
+# --
+`(format-time-string "%Y-%m-%d")` * "${1:Description}"
+${2:Account$$(beancount-insert-account "")} ${3:AMT}
+${4:CUR$(yas-choose-value '("USD" "DKK"))}
+${5:Account$$(yas-choose-value beancount-accounts)} -$3 $4
+
+bc_$0

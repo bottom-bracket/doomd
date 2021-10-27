@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: equation-simple
+# key: equ
+# binding: C-c y e
+# condition: (or (= (current-column) 3) (= (current-column) 0))
+# --
+# <<eq:$1>>
+\begin{${2:eq-env$$(yas-auto-next
+                (yas-choose-value
+                '("equation" "align" "multline" "equation*" "align*" "multline*")))}}
+\label{eq:${1:label}}
+$0
+\end{$2}

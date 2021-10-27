@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: figure
+# key: ofig
+# binding: C-c y f
+# condition: (or (= (current-column) 4) (= (current-column) 0))
+# contributor: Philip Heringlake <heringlake-public@mailbox.org>
+# --
+#+name: fig:${1:$(file-name-base yas-text)}
+#+caption[$2]:$0 
+[[file:${1:$$(unless yas-modified-p (completing-read "File: " 'read-file-name-internal))}]]

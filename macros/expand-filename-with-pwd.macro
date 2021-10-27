@@ -1,0 +1,2 @@
+(fset 'expand-filename-with-pwd
+   (kmacro-lambda-form [?v ?: backspace backspace backspace backspace backspace ?r ?! ?p ?w ?d return ?d ?$ ?k ?f ?. ?v ?p ?y ?y] 0 "%d"))

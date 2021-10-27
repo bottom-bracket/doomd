@@ -1,0 +1,6 @@
+[submodule "snippets/python-mode"]
+	path = snippets/python-mode
+	url = https://github.com/marubu/yasnippet-numpy-style.git
+[submodule "modules/emacs-webkit-katex-render"]
+	path = modules/emacs-webkit-katex-render
+	url = https://github.com/fuxialexander/emacs-webkit-katex-render.git
