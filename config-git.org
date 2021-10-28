@@ -1,4 +1,4 @@
-# Created 2021-10-27 Mi 15:49
+# Created 2021-10-28 Do 10:56
 #+title: DOOM Emacs Configuration
 #+author: C-v y p
 #+property: header-args :tangle yes :cache yes :results silent :padline no
@@ -1053,7 +1053,7 @@ module but since I am writing a lot of formulas in org I want to have it
 there as well.  
 #+begin_src emacs-lisp
 (after! org
-  (add-hook! org-mode evil-tex-mode))
+  (add-hook! org-mode #'evil-tex-mode))
 #+end_src
 also activate it in the ~edit special~ buffers
 #+begin_src emacs-lisp
