@@ -53,9 +53,8 @@
 
 (package! blacken :recipe (:local-repo "./modules/python"
                                   :files ("blacken.el")))
-(package! beancount :recipe (:host github :repo "beancount/beancount-mode"))
 ;; * Mail
-(package! mu4e-maildirs-extension)
+;; (package! mu4e-maildirs-extension)
 ;; * Writing
 (package! academic-phrases)
 ;; * Org
@@ -67,8 +66,6 @@
 (package! org-sidebar)
 (package! org-mime)
 (package! org-preview-html)
-;; toggel latex fragments automatically
-;; (package! org-fragtog )
 ;; better agenda
 (package! org-super-agenda :pin "dd0d104c26")
 ;; Declarative Org Capture Templates
@@ -81,10 +78,9 @@
 (unpin! org-roam)
 (package! websocket)
 (package! org-roam-ui :recipe (:host github :repo "org-roam/org-roam-ui" :files ("*.el" "out")))
-
-;; (package! org-colored-text :recipe (:host github :repo "jkitchin/jmax" :files ("org-colored-text.el")))
 (package! org-colored-text :recipe (:local-repo "./modules/org"
                                     :files ("org-colored-text.el")))
+(package! ox-gfm)
 ;; Org Ref
 (package! org-ref)
 (package! org-noter)
@@ -98,42 +94,26 @@
 (package! ranger) ; load here to not modify dired too much
 (package! helm-org-rifle)
 (package! company-tabnine :disable t)
-;; (package! company-lsp :disable nil)
-;; (package! company-math)
 (package! mathpix.el
   :recipe (:host github :repo "jethrokuan/mathpix.el")
 )
-;; (package! dired+)
-;; (package! snails
-;;   :recipe (:host github :repo "manateelazycat/snails" :files ("*.el" "*.sh") :no-byte-compile t))
-;; ;; (package! polymode :recipe
-;;    (:host github :repo "polymode/polymode"))
-
-;; (package! org-fstree :recipe (:local-repo "./modules/org"
-                                         ;; :files ("org-fstree.el")))
-
-(package! ox-koma-letter :recipe (:local-repo "./modules/org"
-                                  :files ("ox-koma-letter.el")))
-
-;; (package! webkit-katex-renderer :recipe (:host github :repo "fuxialexander/emacs-webkit-katex-render"
-;;                                   :files ("webkit-katex-render.el")))
-
+;; natural constants
+(package! constants
+  :recipe (:host github :repo "cdominik/constants-for-Emacs" :files ("constants.el"))
+)
 (package! calctex :recipe (:host github :repo "johnbcoughlin/calctex"
                                  :files ("*.el")) :pin "542b628eb4")
 (package! sentence-highlight)
-;; (package! org-msg :recipe (:host github :repo "bottom-bracket/org-msg"))
 ;; (package! org-msg :recipe (:local-repo "./modules/org-msg"
 ;;                            :files ("org-msg.el")))
 
-;; ws-butler spoils the undo history when you save a file while having the cursor on a freshly added trailing whitespace.
-;; the fix https://github.com/hlissner/doom-emacs/commit/c59ae5d172c9c4b044c597bfdcf35c01e2d3eb8e seems to resolve the issue
-;; but introdudes an annoying deletion of the last whitespace in a line whenever the buffer autosaves.
 (package! ws-butler :disable t)
-;; (package! pdf-tools :pin )
-;; (package! tablist :pin )
 
 (package! ox-ipynb :recipe (:host github :repo "jkitchin/ox-ipynb" :files ("ox-ipynb.el")))
 
 (package! org-contrib)
-(unpin! org-msg)
-;; (unpin! org-mode)
+(package! impatient-mode)
+;; (unpin! org-msg)
+;; Python docstrings from reddit: https://www.reddit.com/r/emacs/comments/lgqqsu/automatic_python_docstring_generation/
+(package! py-pyment :recipe (:host github :repo "humitos/py-cmd-buffer.el"))
+(package! buftra :recipe (:host github :repo "humitos/buftra.el"))  ;; py-pyment dependency!

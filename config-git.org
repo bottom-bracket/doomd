@@ -1,4 +1,4 @@
-# Created 2021-10-28 Do 10:56
+# Created 2022-03-31 Do 10:03
 #+title: DOOM Emacs Configuration
 #+author: C-v y p
 #+property: header-args :tangle yes :cache yes :results silent :padline no
@@ -101,10 +101,11 @@ You will need to enable the `hydra` module first.
 #+begin_src emacs-lisp
 (setq pop-up-windows t)
 #+end_src
+
 * Eyecandy
 #+begin_src emacs-lisp
-(setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
-(doom-themes-treemacs-config)
+;; (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+;; (doom-themes-treemacs-config)
 #+end_src
 ** Use theme magic to sync emacs theme with system
 #+begin_src emacs-lisp
@@ -139,18 +140,26 @@ This will perhaps reduce lag time in large buffers...
 (setq jit-lock-defer-time 0.4)
 #+end_src
 
-* Evil everywhere
+* Evil
+** Evil everywhere
 #+begin_src emacs-lisp
 (use-package! evil-surround
   :config
   (global-evil-surround-mode 1))
 #+end_src
+** Treat underscore as word
+#+begin_src emacs-lisp
+(modify-syntax-entry ?_ "w")
+#+end_src
+
+#+results: 
+
 * Keybindings
 ** Org mode
 #+begin_src emacs-lisp
 (map! :map org-mode-map
      :localleader
-     :desc "Reference" "l r" #'org-ref-helm-insert-ref-link
+     :desc "Reference" "l r" #'org-ref-insert-ref-link
      :desc "Toggle Link display" "L" #'org-toggle-link-display
      :desc "Toggle LaTeX fragment" "X" #'org-latex-preview
      :desc "Copy Email html to clipboard" "M" #'export-org-email
@@ -166,6 +175,9 @@ This will perhaps reduce lag time in large buffers...
          :desc "Todo Subheading" "S" #'org-insert-todo-subheading)
      )
 #+end_src
+
+#+results: 
+
 #+begin_src emacs-lisp
 (map! :after jupyter-org-client
       :map jupyter-org-interaction-mode-map
@@ -374,7 +386,7 @@ Perhaps remove this
 Inspiration and realization taken from [[https://coredumped.dev/posts/outlook-email-in-org-mode/][Using org mode to write email for outlook · Core Dumped]]
 #+begin_src emacs-lisp
 
-(defcustom org-html-image-base64-max-size #x40000
+(defcustom org-html-image-base64-max-size #x400000
   "Export embedded base64 encoded images up to this size."
   :type 'number
   :group 'org-export-html)
@@ -1052,14 +1064,14 @@ A very handy module to type latex formulas. By default active in the latex
 module but since I am writing a lot of formulas in org I want to have it
 there as well.  
 #+begin_src emacs-lisp
-(after! org
-  (add-hook! org-mode #'evil-tex-mode))
+;; (after! org
+  ;; (add-hook! org-mode #'evil-tex-mode))
 #+end_src
 also activate it in the ~edit special~ buffers
 #+begin_src emacs-lisp
-(add-hook! TeX-mode
-            #'(evil-tex-mode cdlatex-mode)
-           )
+;; (add-hook! TeX-mode
+            ;; #'((evil-tex-mode) (cdlatex-mode))
+           ;; )
 #+end_src
 *** Org Export
 Don't export table of contents and set async export
@@ -1247,13 +1259,14 @@ with special formatting.
 #+end_src
 *** Org Capture Templates
 #+begin_src emacs-lisp
+(defvar my-work-orgfile "Research.org")
 (after! org
   (setq org-capture-templates
-        '(("w" "PhD work templates")
+        '(("w" "work templates")
           ("wa"               ; key
            "Article"         ; name
            entry             ; type
-           (file+headline "PhD.org" "Article")  ; target
+           (file+headline my-work-orgfile "Article")  ; target
            "* %^{Title} %(org-set-tags)  :article: \n:PROPERTIES:\n:Created: %U\n:Linked: %a\n:END:\n%i\nBrief description:\n%?"  ; template
            :prepend t        ; properties
            :empty-lines 1    ; properties
@@ -1265,19 +1278,19 @@ with special formatting.
            :empty-lines 1
            )
           ("wt" "TODO template" entry
-           (file+headline "PhD.org" "Capture")
+           (file+headline my-work-orgfile "Capture")
            ( file "tpl_todo.txt" ) :empty-lines-before 1)
           ("wp" "PhD Thesis TODO template" entry
            (file+headline "PhD.org" "Thesis Roadmap - todo list")
            ( file "tpl_todo.txt" ) :empty-lines-before 1)
-          ("wl" "Logbook entry" entry (file+datetree "phd_journal.org.gpg") "** %U - %^{Activity}  :LOG:")
-          ("ww" "Link" entry (file+headline "PhD.org" "Links") "* %? %^L %^g \n%T" :prepend t)
-          ("wn" "Note" entry (file+headline "PhD.org" "Notes")
+          ("wl" "Logbook entry" entry (file+datetree my-work-orgfile) "** %U - %^{Activity}  :LOG:")
+          ("ww" "Link" entry (file+headline my-work-orgfile "Links") "* %? %^L %^g \n%T" :prepend t)
+          ("wn" "Note" entry (file+headline my-work-orgfile "Notes")
            "* NOTE %?\n%U" :empty-lines 1)
-          ("wN" "Note with Clipboard" entry (file+headline "PhD.org" "Notes")
+          ("wN" "Note with Clipboard" entry (file+headline my-work-orgfile "Notes")
            "* NOTE %?\n%U\n   %c" :empty-lines 1)
           ;; MEETING  (m) Meeting template
-          ("wm" "MEETING   (m) Meeting" entry (file+headline "PhD.org" "Unsorted Meetings")
+          ("wm" "MEETING   (m) Meeting" entry (file+headline my-work-orgfile "Unsorted Meetings")
            "* %^{Meeting Title}
 SCHEDULED: %^T
 :PROPERTIES:
@@ -1312,6 +1325,11 @@ SCHEDULED: %^T
            "* %^{The word} :drill:\n %t\n %^{Extended word (may be empty)} \n** Answer \n%^{The definition}"))
         ))
 #+end_src
+
+#+results: 
+| w  | work templates |       |                                         |                                        |
+| wa | Article        | entry | (file+headline my-work-orgfile Article) | * %^{Title} %(org-set-tags)  :article: |
+
 *** Org Agenda
 **** Super Agenda
 #+begin_src emacs-lisp
@@ -1412,7 +1430,7 @@ Avoid cryptic attach style directories:
 (setq org-roam-capture-templates
       '(("d" "default" plain 
          "#+filetags: %?\n- source :: \n"
-         :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>" "#+title: ${title}\n")
+         :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org" "#+title: ${title}\n")
          :unnarrowed t)
         ("p" "Permanent Note" plain "%?"
          :if-new (file+head "${slug}.org"
@@ -1422,7 +1440,7 @@ Avoid cryptic attach style directories:
 (setq org-roam-capture-ref-templates
       '(("r" "ref" plain 
          "#+filetags: ${tags}\n\n %?"
-         :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>" "#+TITLE: ${title}\n#+ROAM_KEY: ${ref}\n")
+         :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org" "#+TITLE: ${title}\n#+ROAM_KEY: ${ref}\n")
          :unnarrowed t)))
 #+end_src
 Org roam ui:
@@ -1526,6 +1544,81 @@ Hopefully fixes crashes in repl:
   (dolist (lang org-babel-lang-list)
     (eval `(lsp-org-babel-enable ,lang)))
 #+end_src
+**** temporary disable figure redisplay after src exec
+#+begin_src emacs-lisp
+;; (after! org
+;;   (remove-hook 'org-babel-after-execute-hook #'+org-redisplay-inline-images-in-babel-result-h))
+#+end_src
+
+#+results: 
+**** Tangle in folder
+A function that permits to create the tangle file name based on a ~directory~
+property. Taken from:
+[[https://emacs.stackexchange.com/questions/46479/how-to-set-a-tangled-parent-directory-for-each-subtree-in-org-mode][org
+export - How to set a tangled parent directory for each subtree in org mo...]]
+#+begin_src emacs-lisp
+(defun org-in-tangle-dir (sub-path)
+  "Expand the SUB-PATH into the directory given by the tangle-dir
+property if that property exists, else use the
+`default-directory'."
+  (expand-file-name sub-path
+                    (or
+                     (org-entry-get (point) "tangle-dir" 'inherit)
+                     (default-directory))))
+#+end_src
+
+#+results: 
+: org-in-tangle-dir
+
+**** tangle based on tags
+A function to set the ~:tangle~ header argument based on a local property. Used to
+fine tune configuration file management. 
+Modified answer from [[https://emacs.stackexchange.com/questions/13805/can-org-babel-conditionally-tangle-code-blocks-based-on-system-type][Can Org Babel conditionally tangle code blocks based on system-type? - Emacs ...]]
+using the solutions of [[https://emacs.stackexchange.com/questions/21713/how-to-get-property-values-from-org-file-headers][org mode - How to get property values from org file headers - Emacs Stack Exc...]]
+#+begin_src emacs-lisp
+(defun my-is-conftype (block-conftype)
+  "Create :tangle argument based on a local property value.
+Check if the conftype property matches the
+configuration type of the source block.
+If it matches return the property value of the TANGLE_FILE_NAME or ('yes' by default)
+if not return 'no'. "
+    (if
+         (string=  (+org-get-global-property "conftype") block-conftype)
+        (let ((positive-return (org-entry-get nil "TANGLE_FILE_NAME" t)))
+             (if positive-return positive-return "yes"))
+    "no")
+)
+(defun org-global-props (&optional property buffer)
+  "Get the plists of global org properties of current buffer."
+  (unless property (setq property "PROPERTY"))
+  (with-current-buffer (or buffer (current-buffer))
+    (org-element-map (org-element-parse-buffer) 'keyword (lambda (el) (when (string-match property (org-element-property :key el)) el)))))
+(defun org-global-prop-value (key)
+  "Get global org property KEY of current buffer."
+  (org-element-property :value (car (org-global-props key))))
+(defun my-tangle-if-property-in-tags (property-name)
+  "Create :tangle argument based on a local property value.
+Check if the conftype property matches a tag at the current postition.
+The tags are searched recursively, so it's recommended to tag
+the last subheading level. If it matches return the property
+ value of the TANGLE_FILE_NAME or ('yes' by default)
+if not return 'no'."
+  (if (member (org-global-prop-value property-name) (org-get-tags))
+        (let ((positive-return (org-entry-get nil "TANGLE_FILE_NAME" t)))
+             (if positive-return positive-return "yes"))
+    "no")
+  )
+#+end_src
+
+*** source editing in full buffer
+#+begin_src emacs-lisp
+(set-popup-rule! "^\\*Org Src" :ignore t)
+(setq org-src-window-setup 'other-window)
+#+end_src
+
+#+results: 
+: other-window
+
 *** Ox Latex
 **** Export classes
 #+begin_src emacs-lisp
@@ -1534,13 +1627,18 @@ Hopefully fixes crashes in repl:
 Koma Article Class
 #+begin_src emacs-lisp
      (add-to-list 'org-latex-classes
-                  '("koma-article" "\\documentclass{scrartcl}"
+                  '("koma-article" "\\documentclass[11pt,a4paper]{scrartcl}"
                     ("\\section{%s}" . "\\section*{%s}")
                     ("\\subsection{%s}" . "\\subsection*{%s}")
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+(setq org-latex-default-class "koma-article")
 #+end_src
+
+#+results: 
+: scrartcl
+
 
 Mimosis Class
 #+begin_src emacs-lisp
@@ -1583,6 +1681,16 @@ Mimosis Class
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+#+end_src
+New standard class using a4 paper:
+#+begin_src emacs-lisp
+(add-to-list 'org-latex-classes
+         '("a4article" "\\documentclass[11pt,a4paper]{article}"
+            ("\\section{%s}" . "\\section*{%s}")
+            ("\\subsection{%s}" . "\\subsection*{%s}")
+            ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+            ("\\paragraph{%s}" . "\\paragraph*{%s}")
+            ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 #+end_src
 **** Config
 Set Latex logfile extensions to be removed after org export
@@ -1686,6 +1794,30 @@ frame from ~1~ to ~2~.
 #+begin_src emacs-lisp
 (use-package! ox-pandoc)
 #+end_src
+*** Ox md
+**** export with label
+By default the export to markdown does not add a label to the headings since it
+is not supported in basic markdown. I still want this, as it is for instance
+used for doxygen markdown files to link different pages. Let's therefore advice
+the header naming:
+
+
+#+begin_src emacs-lisp
+(after! org
+(defadvice!  org-md-headline-add-label (orig-fn &rest args) :around #'org-md-headline
+  (with-temp-buffer
+    (insert (apply orig-fn args))
+    (goto-char (point-min))
+    (next-line)
+    (goto-char (point-at-eol) )
+    (insert (format "    {#%s}"
+                (or (org-element-property :CUSTOM_ID (nth 0 args))
+                (org-export-get-reference (nth 0 args) (nth 2 args)))))
+    (buffer-string))))
+#+end_src
+
+#+results: 
+
 *** Org ref
 #+begin_src emacs-lisp
 (use-package! org-ref
@@ -1701,6 +1833,8 @@ frame from ~1~ to ~2~.
 	          (bibtex-completion-edit-notes
 	           (list (car (org-ref-get-bibtex-key-and-file thekey)))))))
 
+  (setq org-cite-global-bibliography '( "/home/philip/Documents/PhD/Literaturebib/library_zotero.bib" ))
+  (setq citar-bibliography '( "/home/philip/Documents/PhD/Literaturebib/library_zotero.bib" ))
   (setq org-ref-notes-directory "~/Documents/zettel/Research/biblio/"
         reftex-default-bibliography '("/home/philip/Documents/PhD/Literaturebib/library_zotero.bib")
         bibtex-completion-notes-path "~/Documents/zettel/Research/biblio/"
@@ -1777,10 +1911,12 @@ By default ~C-c ]~ pops up the citation buffer to insert a link. I want to have
 (map!
  :map org-mode-map
  :niv "C-c C-]" #'org-ref-insert-ref-link
- :niv "C-c ]" #'ivy-bibtex
+ ;; :niv "C-c ]" #'org-cite-insert ;;former ivy-bibtex
  )
 )       
 #+end_src
+
+#+results: 
 
 *** Clever Ids
 When storing a link we want to use a link to the headlines ID.
@@ -2091,8 +2227,13 @@ DONE as well. Taken from (https://emacs.stackexchange.com/questions/19843/how-to
 Ditaa is a java program that converts ascii art to diagrams:
 #+begin_src emacs-lisp
 (after! org
-  (setq org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar"))
+  (setq org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
+  )
 #+end_src
+
+#+results: 
+: /usr/share/java/ditaa/ditaa-0.11.jar
+
 *** Special Links
 Use ~org-colored-text~ from Kitchin
 #+begin_src emacs-lisp
@@ -2121,6 +2262,7 @@ like to have this functionality when working with config files. This IS indeed 
 security issue if I really do want to keep secret whats in the heading content.
 In this case I should just disable tangling.
 #+begin_src emacs-lisp
+(after! org 
 (defun my/reveal-and-move-back ()
   (org-reveal)
   (goto-char my/old-point))
@@ -2130,50 +2272,19 @@ In this case I should just disable tangling.
 (defun my/org-reveal-after-save-off ()
   (remove-hook 'after-save-hook 'my/reveal-and-move-back))
 (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
-(add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
+(add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off))
 #+end_src
-*** tangle
-A function to set the ~:tangle~ header argument based on a local property. Used to
-fine tune configuration file management. 
-Modified answer from [[https://emacs.stackexchange.com/questions/13805/can-org-babel-conditionally-tangle-code-blocks-based-on-system-type][Can Org Babel conditionally tangle code blocks based on system-type? - Emacs ...]]
-using the solutions of [[https://emacs.stackexchange.com/questions/21713/how-to-get-property-values-from-org-file-headers][org mode - How to get property values from org file headers - Emacs Stack Exc...]]
-#+begin_src emacs-lisp
-(defun my-is-conftype (block-conftype)
-  "Create :tangle argument based on a local property value.
-Check if the conftype property matches the
-configuration type of the source block.
-If it matches return the property value of the TANGLE_FILE_NAME or ('yes' by default)
-if not return 'no'. "
-    (if
-         (string=  (+org-get-global-property "conftype") block-conftype)
-        (let ((positive-return (org-entry-get nil "TANGLE_FILE_NAME" t)))
-             (if positive-return positive-return "yes"))
-    "no")
-)
-(defun org-global-props (&optional property buffer)
-  "Get the plists of global org properties of current buffer."
-  (unless property (setq property "PROPERTY"))
-  (with-current-buffer (or buffer (current-buffer))
-    (org-element-map (org-element-parse-buffer) 'keyword (lambda (el) (when (string-match property (org-element-property :key el)) el)))))
-(defun org-global-prop-value (key)
-  "Get global org property KEY of current buffer."
-  (org-element-property :value (car (org-global-props key))))
-(defun my-tangle-if-property-in-tags (property-name)
-  "Create :tangle argument based on a local property value.
-Check if the conftype property matches a tag at the current postition.
-The tags are searched recursively, so it's recommended to tag
-the last subheading level. If it matches return the property
- value of the TANGLE_FILE_NAME or ('yes' by default)
-if not return 'no'."
-  (if (member (org-global-prop-value property-name) (org-get-tags))
-        (let ((positive-return (org-entry-get nil "TANGLE_FILE_NAME" t)))
-             (if positive-return positive-return "yes"))
-    "no")
-  )
-#+end_src
+
+#+results: 
+| my/org-reveal-after-save-off |
+
 *** Org exporter to ipynb
 #+begin_src emacs-lisp
 (use-package! ox-ipynb)
+#+end_src
+*** ox-gfm
+#+begin_src emacs-lisp
+;; (use-package! ox-gfm)
 #+end_src
 *** org latex link export
 I want to use ~\autoref~ when referencing to other sections which I usually do by
@@ -2337,12 +2448,20 @@ Try this to invoke ~jupyter-org-interaction-mode~ properly
 (after! ob-jupyter
   (require 'jupyter))
 #+end_src
+
+#+results: 
+: jupyter
+
+
 Set up lookup handler in jupyter org
 #+begin_src emacs-lisp
 (after! jupyter
   (set-lookup-handlers! '(jupyter-repl-mode jupyter-org-interaction-mode jupyter-repl-interaction-mode jupyter-repl-persistent-mode)
     :documentation '(jupyter-inspect-at-point :async t)))
 #+end_src
+
+#+results: 
+
 *** Auto formatting
 Use blacken instead of ~SPC c f~ because it works better
 #+begin_src emacs-lisp
@@ -2355,6 +2474,19 @@ Install sphinx-doc to create docstrings for functions with ~C-c M-d~
                                   (require 'sphinx-doc)
                                   (sphinx-doc-mode t)))
 #+end_src
+*** Docstring pyment
+taken from [[https://www.reddit.com/r/emacs/comments/lgqqsu/automatic_python_docstring_generation/][Reddit - Explorez sans limite]]
+#+begin_src emacs-lisp
+;; Python docstring tool
+(use-package py-pyment
+    :after python
+    :config
+    (setq py-pyment-options '("--output=numpydoc")))
+#+end_src
+
+#+results: 
+: t
+
 ** Version Control
 ** Backup
 autosave
@@ -2427,7 +2559,8 @@ mu --version | head -n 1 | sed 's/.* version //'
 #+begin_src emacs-lisp
 (after! mu4e
 (setq mu4e-mu-binary "/usr/bin/mu")
-(setq mu4e-update-interval 300)
+(setq mu4e-update-interval 300
+      mu4e-split-view 'vertical)
 (setq mu4e-maildir (expand-file-name "~/.mail"))
 ;; allow for updating mail using 'U' in the main view:
       mu4e-get-mail-command "mbsync -a"
@@ -2677,6 +2810,34 @@ Faster update images when file has changed
                                             "\n\\usepackage{arevmath}")))
 (add-hook 'calc-mode-hook #'calctex-mode)
 #+end_src
+** Constants
+The ~constants.el~ package from /Carsten Dominik/ allows for easy definition of
+natural constants in various programming languages ([[https://github.com/cdominik/constants-for-Emacs][GitHub - cdominik/constants-for-Emacs: Insert units and constants into source...]]). Why did I not look for this earlier?
+#+begin_src emacs-lisp
+(use-package! constants
+  :config
+  (map!
+   :map global-map
+   (:prefix ("C-c c" . "Constants")
+   :desc "Insert constant" "i" #'constants-insert
+   :desc "Get constant" "g" #'constants-get
+   :desc "Replace constant" "r" #'constants-replace
+   )
+   )
+  ;; (define-key global-map "\C-cci" 'constants-insert)
+  ;; (define-key global-map "\C-ccg" 'constants-get)
+  ;; (define-key global-map "\C-ccr" 'constants-replace)
+  (setq constants-unit-system 'SI)   ;  this is the default
+  ;; Use "cc" as the standard variable name for speed of light,
+  ;; "kb" for Boltzmann's constant, and "hp" for Planck's constant
+  (setq constants-rename '(("kb" . "k") ))
+  ;; A default list of constants to insert when none are specified
+  (setq constants-default-list "c,e")
+)  
+#+end_src
+
+#+results: 
+: t
 
 ** Help stuff
 *** Which key popup
@@ -2853,6 +3014,32 @@ can wrap the functions in something that only returns the string:
 #+begin_src emacs-lisp
 (load "~/.doom.d/modules/c/gendoxy/gendoxy.el")
 #+end_src
+** impatient mode for markdown preview
+#+begin_src emacs-lisp
+(defun markdown-html (buffer)
+  (princ (with-current-buffer buffer
+    (format "<!DOCTYPE html><html><title>Impatient Markdown</title><xmp theme=\"united\" style=\"display:none;\"> %s  </xmp><script src=\"http://strapdownjs.com/v/0.2/strapdown.js\"></script></html>" (buffer-substring-no-properties (point-min) (point-max))))
+  (current-buffer)))
+(use-package! impatient-mode
+                )
+(add-hook! markdown-mode (imp-set-user-filter 'markdown-html)
+           )
+#+end_src
+
+#+results: 
+
+** lsp
+Disable multi root projects to have separate servers running (and hopefully
+reduce lagging)
+#+begin_src emacs-lisp
+(use-package! lsp
+  :init
+  (setq lsp-pyright-multi-root nil))
+#+end_src
+
+#+results: 
+: lsp
+
 * Macros
 Keyboard macros that are nice to keep but not worth to make a full elisp
 function of.

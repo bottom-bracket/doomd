@@ -40,7 +40,7 @@
        ;;fill-column       ; a `fill-column' indicator
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        hydra
-       ;; indent-guides     ; highlighted indent columns
+       indent-guides     ; highlighted indent columns
        (modeline +light)          ; snazzy, Atom-inspired modeline, plus API
        nav-flash         ; blink the current line after jumping
        ;;neotree           ; a project drawer, like NERDTree for vim
@@ -58,6 +58,7 @@
                       )    ; visually switch windows
        workspaces        ; tab emulation, persistence & separate workspaces
        zen               ; distraction-free coding or writing
+       minimap           ; show a map of the code on the side
 
        :editor
        (evil +everywhere); come to the dark side, we have cookies
@@ -126,6 +127,7 @@
 
        :lang
        ;;agda              ; types of types of types of types...
+       (beancount +lsp)
        ;;assembly          ; assembly for fun or debugging
        (cc +lsp)               ; C/C++/Obj-C madness
        ;;clojure           ; java with a lisp
