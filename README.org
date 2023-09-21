@@ -1,0 +1,4 @@
+#+title: Readme
+
+Please see [[https://github.com/bottom-bracket/doomd/blob/master/config-git.org][config-git.org]] .
+
