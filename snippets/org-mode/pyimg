@@ -1,9 +1,10 @@
 # -*- mode: snippet; require-final-newline: nil -*-
 # name: ipython-figure
 # key: pyimg
+# uuid: pyimg
 # --
 #+NAME: ${1:`(make-temp-name "")`}
-#+BEGIN_SRC jupyter-python ${2::session ${3:`(file-name-base (buffer-file-name))`}} :var figurename=(format "./resources/%s.png" (org-element-property :name (org-element-context))) :exports none
+#+BEGIN_SRC jupyter-python ${2::session ${3:`(file-name-base (buffer-file-name))`}} :exports none
 $0
 #+END_SRC
 #+CAPTION: $5

@@ -90,7 +90,9 @@
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
-       spell             ; tasing you for misspelling mispelling
+       (spell             ; tasing you for misspelling mispelling
+        +flyspell
+        +everywhere)
        grammar           ; tasing grammar mistake every you make
 
        :tools
@@ -117,7 +119,7 @@
        rgb               ; creating color strings
        ;; taskrunner
        ;;terraform         ; infrastructure as code
-       ;;tmux              ; an API for interacting with tmux
+       tmux              ; an API for interacting with tmux
        upload            ; map local to remote projects via ssh/ftp
 
        :os
@@ -140,17 +142,18 @@
        ;;elm               ; care for a cup of TEA?
        emacs-lisp        ; drown in parentheses
        ;;erlang            ; an elegant language for a more civilized age
-       ;;ess               ; emacs speaks statistics
+       ess               ; emacs speaks statistics
        ;;faust             ; dsp, but you get to keep your soul
        ;;fsharp           ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;go                ; the hipster dialect
-       ;;(haskell +dante)  ; a language that's lazier than I am
+       (haskell +dante)  ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ;
        ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
        ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
-       julia             ; a better, faster MATLAB
+       (julia             ; a better, faster MATLAB
+        +lsp)
        ;;kotlin            ; a better, slicker Java(Script)
        (latex           ; writing papers in Emacs has never been so fun
         +latexmk

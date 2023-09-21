@@ -67,7 +67,7 @@
 (package! org-mime)
 (package! org-preview-html)
 ;; better agenda
-(package! org-super-agenda :pin "dd0d104c26")
+(package! org-super-agenda )
 ;; Declarative Org Capture Templates
 (package! doct
   :recipe (:host github :repo "progfolio/doct")
@@ -75,7 +75,7 @@
 ;; org graph view: give it another try
 (package! org-graph-view :recipe (:host github :repo "alphapapa/org-graph-view") )
 
-(unpin! org-roam)
+;; (unpin! org-roam)
 (package! websocket)
 (package! org-roam-ui :recipe (:host github :repo "org-roam/org-roam-ui" :files ("*.el" "out")))
 (package! org-colored-text :recipe (:local-repo "./modules/org"
@@ -117,3 +117,6 @@
 ;; Python docstrings from reddit: https://www.reddit.com/r/emacs/comments/lgqqsu/automatic_python_docstring_generation/
 (package! py-pyment :recipe (:host github :repo "humitos/py-cmd-buffer.el"))
 (package! buftra :recipe (:host github :repo "humitos/buftra.el"))  ;; py-pyment dependency!
+
+(package! ob-mathematica)
+(package! wolfram-mode)
