@@ -1,6 +1,7 @@
-# Created 2022-03-31 Do 10:03
+# Created 2023-09-21 Do 17:46
 #+title: DOOM Emacs Configuration
 #+author: C-v y p
+#+startup: show2levels num
 #+property: header-args :tangle yes :cache yes :results silent :padline no
 #+property: header-args :tangle config.el
 #+exclude_tags: noexport
@@ -8,7 +9,7 @@
 * Basics
 
 ** Name
-#+begin_src emacs-lisp :tangle nil :noweb-ref name-public
+#+begin_src emacs-lisp :tangle no :noweb-ref name-public
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "Your Name"
@@ -101,7 +102,13 @@ You will need to enable the `hydra` module first.
 #+begin_src emacs-lisp
 (setq pop-up-windows t)
 #+end_src
-
+** hacks
+load path is missing side-lisp [2022-07-21 Do]  
+#+begin_src emacs-lisp
+(add-to-list 'load-path "/usr/share/emacs/site-lisp/")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+#+end_src
 * Eyecandy
 #+begin_src emacs-lisp
 ;; (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
@@ -116,6 +123,24 @@ Let's automatically update terminals on theme change
 ;; (add-hook 'doom-load-theme-hook #'theme-magic-from-emacs 100)
 ;; (remove-hook 'doom-load-theme-hook #'theme-magic-from-emacs 100)
 #+end_src
+** Set theme dependend on daytime
+#+begin_src emacs-lisp
+(defun synchronize-theme ()
+  (let* ((light-theme 'doom-one-light)
+         (dark-theme 'doom-one)
+         (start-time-light-theme 6)
+         (end-time-light-theme 18)
+         (hour (string-to-number (substring (current-time-string) 11 13)))
+         (next-theme (if (member hour (number-sequence start-time-light-theme end-time-light-theme))
+                         light-theme dark-theme)))
+    (when (not (equal doom-theme next-theme))
+      (setq doom-theme next-theme)
+      (load-theme next-theme))))
+
+(run-with-timer 0 900 'synchronize-theme)
+#+end_src
+
+
 ** Modeline Configuration
 #+name: 
 Whether display the mu4e notifications. It requires `mu4e-alert' package.
@@ -139,6 +164,14 @@ This will perhaps reduce lag time in large buffers...
 #+begin_src emacs-lisp
 (setq jit-lock-defer-time 0.4)
 #+end_src
+** Color hex strings accordingly
+Add a hook to various modes in order to have colored hex strings there by default
+#+begin_src emacs-lisp
+(add-hook 'python-mode-hook (rainbow-mode 1))
+(add-hook 'org-mode-hook (rainbow-mode 1)) 
+(add-hook 'conf-mode-hook (rainbow-mode 1)) 
+#+end_src
+
 
 * Evil
 ** Evil everywhere
@@ -193,12 +226,20 @@ would be the better option to use)
       "S-<return>" #'org-sidebar-tree-jump
       "S-RET" #'org-sidebar-tree-jump)
 #+end_src
-** Spell check menu
+** Spell check
+*** Hydra
 #+begin_src emacs-lisp
 (map! :leader
       (:prefix ("y" . "Useful Hydra Menus")
         :desc "Spelling" "s" #'hydra-spelling/body))
 #+end_src
+*** restart spell checker when dict changes
+#+begin_src emacs-lisp
+(advice-remove #'spell-fu-mode  #'ispell-change-dictionary)
+#+end_src
+
+#+results: 
+
 ** Open Calc
 #+begin_src emacs-lisp
 (map! :leader
@@ -519,8 +560,8 @@ Scan project folder for org files and call org Agenda on them.
 *** Agenda files
 define agenda files for personal and professional use.
 #+begin_src emacs-lisp
-(defvar my-org-agenda-files-personal '("~/Documents/org/PhD.org" "~/Documents/org/personal.org.gpg" "~/Documents/org/gcal.org" "~/Documents/zettel/Research/thesis_outline-20200505122101.org"))
-(defvar my-org-agenda-files-professional '("~/Documents/org/PhD.org"))
+(defvar my-org-agenda-files-personal '("~/Documents/org/Research.org" "~/Documents/org/personal.org"))
+(defvar my-org-agenda-files-professional '("~/Documents/org/Research.org"))
 ;; (setq org-agenda-files (append my-org-agenda-files-personal (doom-files-in "~/Documents/Research" :match "\\.org$" :full t)))
 (setq org-agenda-files my-org-agenda-files-personal)
 
@@ -529,6 +570,10 @@ define agenda files for personal and professional use.
 ;;         org-agenda-files my-org-agenda-files-personal
 ;;         ))
 #+end_src
+
+#+results: 
+| ~/Documents/org/Research.org | ~/Documents/org/personal.org |
+
 *** change between personal and others
 I want to have phd and personal notes in two different Roam folders. Usually I
 want to work with ~.dir-locals~ variables however this does not always work so I
@@ -1014,7 +1059,8 @@ org goto
 #+end_src
 image size
 #+begin_src emacs-lisp
-(setq org-image-actual-width '(400))
+(after! org
+  (setq org-image-actual-width '(400)))
 #+end_src
 org source popups in window at the right -> actually not, let's use the same
 window .
@@ -1022,22 +1068,6 @@ window .
 (after! org
   (setq org-src-window-setup 'split-window-right)
   )
-#+end_src
-prettify item bullets as well
-#+begin_src emacs-lisp
-(after! org
-(setq org-superstar-prettify-item-bullets t))
-(custom-set-faces!
-  '(outline-1 :weight extra-bold :height 1.6 :underline t)
-  '(outline-2 :weight bold :height 1.5)
-  '(outline-3 :weight bold :height 1.4)
-  '(outline-4 :weight semi-bold :height 1.4)
-  '(outline-5 :weight semi-bold :height 1.3)
-  '(outline-6 :weight semi-bold :height 1.2)
-  '(outline-7 :weight semi-bold :height 1.2)
-  '(outline-8 :weight semi-bold :height 1.1)
-  '(outline-9 :weight semi-bold :height 1.1)
-  '(outline-10 :weight semi-bold :height 1.1))
 #+end_src
 
 Disable ~ws-butler~ in org mode as it removes last whitespace when saving. This is
@@ -1049,16 +1079,21 @@ Show all headlines folded
 
 #+begin_src emacs-lisp
 (after! org
-  (setq org-startup-folded "content")
+  (setq org-startup-folded t)
+  (setq org-startup-numerated t)
+  (setq org-startup-with-inline-images t)
+  (setq org-hide-block-startup t)
   )
 #+end_src
+
+#+results: 
+: t
+
 *** Macros
 Load macros from ~macros.el~
 #+begin_src emacs-lisp
 (load "~/.doom.d/lisp/org-macros.el")
 #+end_src
-*** org pretty mode
-Too slow...
 *** Evil-tex
 A very handy module to type latex formulas. By default active in the latex
 module but since I am writing a lot of formulas in org I want to have it
@@ -1074,7 +1109,7 @@ also activate it in the ~edit special~ buffers
            ;; )
 #+end_src
 *** Org Export
-Don't export table of contents and set async export
+**** Don't export table of contents and set async export
 #+begin_src emacs-lisp
 (after! org
   (setq org-export-with-toc nil
@@ -1483,8 +1518,9 @@ Enable interaction mode in org mode
  '((emacs-lisp . t)
    (julia . t)
    (python . t)
-   (jupyter . t)))
-  (setq ob-async-no-async-languages-alist '( "jupyter-python"  "python"))
+   (jupyter . t)
+   (mathematica . t)))
+  (setq ob-async-no-async-languages-alist '( "python"))
   )
 (after! ob-jupyter
 (setenv "PYENV_VERSION" "3.9.0")
@@ -1496,15 +1532,29 @@ Enable interaction mode in org mode
 (after! ob-jupyter
   (setq jupyter-eval-use-overlays t)
   (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
-                                                       (:kernel . "python3"))))
+                                                       (:kernel . "python3")
+                                                       (:var . "figurename=(format \"./resources/%s.png\" (org-element-property :name (org-element-context)))")))
+  )
 #+end_src
+
+
 Hopefully fixes crashes in repl:
 #+begin_src emacs-lisp
-(defun jupyter-repl-font-lock-override (_ignore beg end &optional verbose)
-  `(jit-lock-bounds ,beg . ,end))
+;; (defun jupyter-repl-font-lock-override (_ignore beg end &optional verbose)
+;;   `(jit-lock-bounds ,beg . ,end))
 
-(advice-add #'jupyter-repl-font-lock-fontify-region :override #'jupyter-repl-font-lock-override)
+;; (advice-add #'jupyter-repl-font-lock-fontify-region :override #'jupyter-repl-font-lock-override)
 #+end_src
+
+#+results: 
+
+Pop up new buffers in frames:
+#+begin_src emacs-lisp
+(setq jupyter-pop-up-frame nil)
+#+end_src
+
+#+results: 
+
 **** Run codeblocks without confirmation:
 #+begin_src emacs-lisp
   (setq org-confirm-babel-evaluate nil)   ;don't prompt me to confirm everytime I want to evaluate a block
@@ -1546,11 +1596,12 @@ Hopefully fixes crashes in repl:
 #+end_src
 **** temporary disable figure redisplay after src exec
 #+begin_src emacs-lisp
-;; (after! org
-;;   (remove-hook 'org-babel-after-execute-hook #'+org-redisplay-inline-images-in-babel-result-h))
+(after! org
+  (remove-hook 'org-babel-after-execute-hook #'+org-redisplay-inline-images-in-babel-result-h))
 #+end_src
 
 #+results: 
+| display-ansi-colors |
 **** Tangle in folder
 A function that permits to create the tangle file name based on a ~directory~
 property. Taken from:
@@ -1583,7 +1634,7 @@ configuration type of the source block.
 If it matches return the property value of the TANGLE_FILE_NAME or ('yes' by default)
 if not return 'no'. "
     (if
-         (string=  (+org-get-global-property "conftype") block-conftype)
+         (string=  (org-global-prop-value "conftype") block-conftype)
         (let ((positive-return (org-entry-get nil "TANGLE_FILE_NAME" t)))
              (if positive-return positive-return "yes"))
     "no")
@@ -1610,10 +1661,100 @@ if not return 'no'."
   )
 #+end_src
 
+#+results: 
+: my-tangle-if-property-in-tags
+**** Tangle current code block/file only
+Using the standard tangle function that is accessible with ~C-c C-v t~ will
+always tangle the whole file. That's annoying when editing for instance my
+config org file. The option to tangle only the local code block or any code
+block connected to the current block's file are accessible with prefix arguments
+that are a pain to add in Evil mode. Thus I rebind those to a local keymap.
+#+begin_src emacs-lisp
+(defun org-babel-tangle-block()
+  "Tangle current block only"
+  (interactive)
+  (let ((current-prefix-arg '(4)))
+     (call-interactively 'org-babel-tangle)
+))
+(defun org-babel-tangle-block-file()
+  "Tangle all blocks that tangle to the file of the current code block"
+  (interactive)
+  (let ((current-prefix-arg '(16)))
+     (call-interactively 'org-babel-tangle)
+))
+(map! :map org-mode-map
+      :prefix ("C-c t" . "tangle specific")
+      :desc "Tangle local block" :niv "t" #'org-babel-tangle-block
+      :desc "Tangle local block\'s file" :niv "f" #'org-babel-tangle-block-file
+      :desc "Detangle local block" :niv "d" #'org-babel-detangle
+      )
+#+end_src
+
+#+results: 
+**** Tangle from Special edit
+#+begin_src emacs-lisp
+(defun org-babel-tangle-from-edit-special ()
+    (interactive)
+    (org-edit-src-exit)
+    (let ((current-prefix-arg '(4)))
+      (call-interactively 'org-babel-tangle))
+    (org-edit-special))
+(defun org-babel-tangle-from-edit-special-file ()
+    (interactive)
+    (org-edit-src-exit)
+    (let ((current-prefix-arg '(16)))
+      (call-interactively 'org-babel-tangle))
+    (org-edit-special))
+
+(map! :map org-src-mode-map
+      :prefix "C-c"
+      :desc "Tangle block" :niv "C-t" #'org-babel-tangle-from-edit-special
+      :desc "Tangle block's file" :niv "C-f" #'org-babel-tangle-from-edit-special-file)
+#+end_src
+
+#+results: 
+
+**** Display ansi after execution
+I often have the problem that errors are not rendered:
+#+begin_src python :tangle no :results output
+print('AB\x1b[43mCD\x1b[0mEF')
+#+end_src
+
+#+results: 
+: ABCDEF
+
+
+or
+#+begin_src jupyter-python :tangle no :session test
+1/0
+#+end_src
+
+#+results: 
+:RESULTS:
+: 
+: ZeroDivisionErrorTraceback (most recent call last)
+: <ipython-input-2-f28d32abc5f3> in <module>
+:       1 figurename="./resources/nil.png"
+: ----> 2 1/0
+: 
+: ZeroDivisionError: division by zero
+:END:
+
+using the following hook displays the ansi colors properly:
+#+begin_src emacs-lisp
+(defun display-ansi-colors ()
+  (ansi-color-apply-on-region (point-min) (point-max)))
+
+(add-hook 'org-babel-after-execute-hook #'display-ansi-colors)
+#+end_src
+
+#+results: 
+| display-ansi-colors | +org-redisplay-inline-images-in-babel-result-h |
+
 *** source editing in full buffer
 #+begin_src emacs-lisp
 (set-popup-rule! "^\\*Org Src" :ignore t)
-(setq org-src-window-setup 'other-window)
+(setq org-src-window-setup 'current-window) 
 #+end_src
 
 #+results: 
@@ -1722,7 +1863,8 @@ Standard Packages
                                  ("usenames,dvipsnames" "xcolor" t)
                                  ("binary-units=true" "siunitx" t)
                                  ("" "nicefrac" t)))
-(setq org-latex-listings 'minted)
+(setq org-latex-src-block-backend 'engraved
+      org-latex-engraved-theme t) ;;can also be a theme name, t means current theme
 (setq org-latex-minted-options
   '(
     ;; ("bgcolor" "lightgray")
@@ -1790,6 +1932,20 @@ frame from ~1~ to ~2~.
 (add-to-list 'safe-local-variable-values
              '(org-latex-default-packages-alist . nil))
 #+end_src
+**** AltaCV
+
+#+begin_src emacs-lisp
+(defun org-global-props (&optional property buffer)
+  "Get the plists of global org properties of current buffer."
+  (unless property (setq property "PROPERTY"))
+  (with-current-buffer (or buffer (current-buffer))
+    (org-element-map (org-element-parse-buffer) 'keyword (lambda (el) (when (string-match property (org-element-property :key el)) el)))))
+(defun org-global-prop-value (key)
+  "Get global org property KEY of current buffer."
+  (org-element-property :value (car (org-global-props key))))
+#+end_src
+
+**** LaTeX Config for AltaCV
 *** Ox Pandoc
 #+begin_src emacs-lisp
 (use-package! ox-pandoc)
@@ -2247,7 +2403,7 @@ nicer:
 (setq org-pomodoro-finished-sound "/home/philip/.dotfiles/.doom.d/templebellhuge.wav")
 (setq org-pomodoro-short-break-sound "/home/philip/.dotfiles/.doom.d/templebellhuge.wav")
 (setq org-pomodoro-long-break-sound "/home/philip/.dotfiles/.doom.d/templebellhuge.wav")
-(setq org-pomodoro-length 40)
+(setq org-pomodoro-length 35)
 (setq org-pomodoro-ticking-sound-p nil))
 #+end_src
 *** timer
@@ -2286,100 +2442,6 @@ In this case I should just disable tangling.
 #+begin_src emacs-lisp
 ;; (use-package! ox-gfm)
 #+end_src
-*** org latex link export
-I want to use ~\autoref~ when referencing to other sections which I usually do by
-using the org ids. Also I don't want to use the text of the links to show up
-(and therefore not use ~\hyperref~)
-#+begin_src emacs-lisp :tangle nil
-(after! org
-(defun org-latex-link (link desc info)
-  "Transcode a LINK object from Org to LaTeX.
-
-DESC is the description part of the link, or the empty string.
-INFO is a plist holding contextual information.  See
-`org-export-data'."
-  (let* ((type (org-element-property :type link))
-	 (raw-path (org-element-property :path link))
-	 ;; Ensure DESC really exists, or set it to nil.
-	 (desc (and (not (string= desc "")) desc))
-	 (imagep (org-export-inline-image-p
-		  link (plist-get info :latex-inline-image-rules)))
-	 (path (org-latex--protect-text
-		(pcase type
-		  ((or "http" "https" "ftp" "mailto" "doi")
-		   (concat type ":" raw-path))
-		  ("file"
-		   (org-export-file-uri raw-path))
-		  (_
-		   raw-path)))))
-    (cond
-     ;; Link type is handled by a special function.
-     ((org-export-custom-protocol-maybe link desc 'latex info))
-     ;; Image file.
-     (imagep (org-latex--inline-image link info))
-     ;; Radio link: Transcode target's contents and use them as link's
-     ;; description.
-     ((string= type "radio")
-      (let ((destination (org-export-resolve-radio-link link info)))
-	(if (not destination) desc
-	  (format "\\hyperref[%s]{%s}"
-		  (org-export-get-reference destination info)
-		  desc))))
-     ;; Links pointing to a headline: Find destination and build
-     ;; appropriate referencing command.
-     ((member type '("custom-id" "fuzzy" "id"))
-      (let ((destination
-	     (if (string= type "fuzzy")
-		 (org-export-resolve-fuzzy-link link info 'latex-matrices)
-	       (org-export-resolve-id-link link info))))
-	(cl-case (org-element-type destination)
-	  ;; Id link points to an external file.
-	  (plain-text
-	   (if desc (format "\\href{%s}{%s}" destination desc)
-	     (format "\\url{%s}" destination)))
-	  ;; Fuzzy link points nowhere.
-	  ((nil)
-	   (format (plist-get info :latex-link-with-unknown-path-format)
-		   (or desc
-		       (org-export-data
-			(org-element-property :raw-link link) info))))
-	  ;; LINK points to a headline.  If headlines are numbered
-	  ;; or the link has no description, display headline's
-	  ;; number.  Otherwise, display description or headline's
-	  ;; title.
-	  (headline
-	   (let ((label (org-latex--label destination info t)))
-	     (if (or (not desc)
-		      (org-export-numbered-headline-p destination info))
-		 (format "\\autoref{%s}" label)
-	       (format "\\hyperref[%s]{%s}" label
-		       (or desc
-			   (org-export-data
-			    (org-element-property :title destination) info))))))
-          ;; Fuzzy link points to a target.  Do as above.
-	  (otherwise
-	   (let ((ref (org-latex--label destination info t)))
-	     (if (not desc) (format "\\autoref{%s}" ref)
-	       (format "\\hyperref[%s]{%s}" ref desc)))))))
-     ;; Coderef: replace link with the reference name or the
-     ;; equivalent line number.
-     ((string= type "coderef")
-      (format (org-export-get-coderef-format path desc)
-	      ;; Resolve with RAW-PATH since PATH could be tainted
-	      ;; with `org-latex--protect-text' call above.
-	      (org-export-resolve-coderef raw-path info)))
-     ;; External link with a description part.
-     ((and path desc) (format "\\href{%s}{%s}" path desc))
-     ;; External link without a description part.
-     (path (format "\\url{%s}" path))
-     ;; No path, only description.  Try to do something useful.
-     (t (format (plist-get info :latex-link-with-unknown-path-format) desc)))))
-)
-#+end_src
-#+begin_src emacs-lisp
-(after! org
-  (setq org-latex-reference-command "\\autoref{%s}"))
-#+end_src
 *** ox-beamer
 onlyenv
 #+begin_src emacs-lisp
@@ -2415,6 +2477,29 @@ sectionpic
 | uncoverenv | U | \begin{uncoverenv}%a   | \end{uncoverenv} |
 | overprint  | V | \begin{overprint}%a    | \end{overprint}  |
 | onlyenv    | O | \begin{onlyenv}%a      | \end{onlyenv}    |
+*** org-reveal
+
+#+begin_src emacs-lisp
+(setq org-re-reveal-mathjax-url "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js")
+(setq org-re-reveal-transition "cube")
+#+end_src
+*** fix search in folds in org mode
+**** Unfold in consult search
+#+begin_src emacs-lisp
+(add-hook! 'consult-after-jump-hook
+  (and (derived-mode-p 'org-mode)
+       (org-invisible-p nil t)
+       (org-fold-reveal '(4))))
+#+end_src
+
+#+results: 
+**** make ~/~ search in folded regions
+#+begin_src emacs-lisp
+(setq org-fold-core-style 'overlays)
+#+end_src
+
+#+results: 
+: overlays
 
 ** Beancount
 Recognise beancount files
@@ -2486,7 +2571,6 @@ taken from [[https://www.reddit.com/r/emacs/comments/lgqqsu/automatic_python_doc
 
 #+results: 
 : t
-
 ** Version Control
 ** Backup
 autosave
@@ -2550,6 +2634,10 @@ curl --silent "https://api.github.com/repos/djcb/mu/releases/latest" | grep '"ta
 mu --version | head -n 1 | sed 's/.* version //'
 #+end_src
 
+#+results: 
+| v1.10.6 |        |
+| version | 1.10.3 |
+
 *** mu4e
 #+begin_src emacs-lisp
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
@@ -2597,6 +2685,102 @@ mu --version | head -n 1 | sed 's/.* version //'
 (defun my-msg-match (msg arg address)
   "Match message on headers."
   (mu4e-message-contact-field-matches msg arg address))
+#+end_src
+**** mu4e-context
+#+begin_src emacs-lisp
+;; mu4e-context
+(after! mu4e
+(setq mu4e-context-policy 'pick-first)
+(setq mu4e-compose-context-policy 'always-ask)
+(setq mu4e-contexts
+      (list
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+       (make-mu4e-context
+        :name "mailbox" ;;for mailbox.org
+        :enter-func (lambda () (mu4e-message "Entering context mailbox"))
+        :leave-func (lambda () (mu4e-message "Leaving context mailbox"))
+        :match-func (lambda (msg)
+                      (when msg
+                        (or (mu4e-message-contact-field-matches
+                         msg '(:from :to :cc :bcc) "*@mailbox.org"))
+                        (string-match-p "^/mailbox/*" (mu4e-message-field msg :maildir)))
+                      )
+        :vars '((user-mail-address .  "name@mail.com")
+                (user-full-name  .   "the name")
+                (smtpmail-smtp-user . "theloginemail@addres.com")
+                (smtpmail-default-smtp-server . "smtp.server.com")
+                (smtpmail-smtp-server . "smtp.server.com")
+                (mu4e-maildir-shortcuts                     . ( ("/email/INBOX" . ?i)))
+                (mu4e-sent-folder .  "/mailbox/Sent")
+                (mu4e-drafts-folder . "/mailbox/Drafts")
+                (mu4e-trash-folder .  "/mailbox/Trash")
+                (mu4e-refile-folder . "/mailbox/Archive")
+                (mu4e-compose-format-flowed . t)
+                ;; Save sent message to sent folder (should be deactivated for gmail!)
+                (mu4e-sent-messages-behavior . sent)
+                (message-send-mail-function . smtpmail-send-it)
+                (smtpmail-auth-credentials . (expand-file-name "~/.authinfo.gpg"))
+                (smtpmail-smtp-service . 465)
+                (smtpmail-stream-type . ssl)
+                (smtpmail-debug-info . t)
+                (smtpmail-debug-verbose . t)
+))
+#+end_src
+
+#+begin_src emacs-lisp :export none
+(make-mu4e-context
+           :name "gmail"
+           :enter-func (lambda ()
+                         (mu4e-message "Entering gmail context")
+                         (revert-if-mu4e-main))
+           :leave-func (lambda ()
+                         (mu4e-message "Leaving gmail context")
+                         (revert-if-mu4e-main))
+           :match-func (lambda (msg)
+                         (when msg
+                           (or (my-msg-match msg :to "naehmlich@gmail.com")
+                               (my-msg-match msg :from "naehmlich@gmail.com")
+                               (my-msg-match msg :cc "naehmlich@gmail.com")
+                               (my-msg-match msg :bcc "naehmlich@gmail.com")
+                               (string-match-p "^/gmail/Inbox"
+                                               (mu4e-message-field msg :maildir)))))
+           :vars '( ( user-mail-address            . "naehmlich@gmail.com" )
+                    ( smtpmail-smtp-user           . "naehmlich@gmail.com" )
+                    ( mu4e-compose-signature       . "PH" )
+                    ( smtpmail-smtp-server         . "smtp.gmail.com" )
+                    ( smtpmail-smtp-service        . 587 )
+                    ( mu4e-bookmarks
+                      .
+                      (( :name  "Unread messages"
+                                :query (concat "maildir:/gmail/Inbox "
+                                               "AND flag:unread ")
+                                 :key ?u)
+                        ( :name "Today's messages"
+                                :query "maildir:/gmail/Inbox AND date:today..now"
+                                :key ?t)
+                        ( :name "Last 7 days"
+                                :query "maildir:/gmail/Inbox AND date:7d..now"
+                                :hide-unread t
+                                :key ?w)
+                        ( :name "Deleted"
+                                :query "flag:trashed"
+                                :key ?d)
+                        ( :name "Possibly garbage" ;;nice thing...
+                                :query (concat "bokio "
+                                               "OR from:studentkortet "
+                                               "OR outdoorexperten "
+                                               "OR from:feedback@slack.com "
+                                               "OR from:mail.goodreads.com")
+                                :key ?g)))
+                    (mu4e-maildir-shortcuts . ( ("/gmail/INBOX"            . ?i)
+                                                ("/gmail/[Gmail].Sent Mail" . ?s)
+                                                ("/gmail/[Gmail].Trash" . ?T)
+                                                ("/gmail/[Gmail].Drafts" . ?d)))
+                    ))
+       ))
+)
 #+end_src
 **** dired for attachments
 (never tested)
@@ -2976,7 +3160,6 @@ In order for this to work we need to deactivate the automatic insertion of the
   )
 #+end_src
 
-
 ** eww
 Set popup to open in right window
 #+begin_src emacs-lisp
@@ -3039,6 +3222,22 @@ reduce lagging)
 
 #+results: 
 : lsp
+** Mathematica
+I picked this up at [[https://rgoswami.me/posts/org-mathematica/][Using Mathematica with Orgmode :: Rohit Goswami — Reflections]]
+#+begin_src emacs-lisp
+(use-package! ob-mathematica)
+(use-package! wolfram-mode)
+;; Sanitize output and deal with paths
+(setq org-babel-mathematica-command "~/.local/bin/mash")
+;; Font-locking
+(add-to-list 'org-src-lang-modes '("mathematica" . wolfram))
+(add-to-list 'org-src-lang-modes '("jupyter-Wolfram-Language" . wolfram))
+;; For wolfram-mode
+(setq mathematica-command-line "~/.local/bin/mash")
+#+end_src
+
+#+results: 
+: ~/.local/bin/mash
 
 * Macros
 Keyboard macros that are nice to keep but not worth to make a full elisp
